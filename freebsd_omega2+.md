@@ -1,5 +1,5 @@
 # Building FreeBSD for the Onion Omega 2+:
-This document describes how to build FreeBSD -HEAD for the Onion Omega2+ single
+This document describes how to build FreeBSD 13-STABLE for the Onion Omega2+ single
 board computer and boot it from a USB key.
 
 ## Contents:
@@ -22,12 +22,14 @@ board computer and boot it from a USB key.
 These instructions: <https://github.com/sysadminmike/freebsd-onion-omega2-build>
 and (unpublished) notes provided by Jakob Alvermark.
 
+Forked from: <https://github.com/ZakSN/FreeBSD-onion-omega2-build-notes/blob/master/freebsd_omega2%2B.md> to update
+
 ## 2. Hardware:
 - Onion Omega2+
 - Omega Expansion Dock
 
 ## 3. Software:
-- devel/uboot-mkimage
+- devel/u-boot-tools
 - archivers/lzma
 - FreeBSD source tree
 - freebsd-wifi-build tree (<https://github.com/freebsd/freebsd-wifi-build>)
@@ -40,19 +42,15 @@ freebsd-wifi-build system: <https://github.com/freebsd/freebsd-wifi-build/wiki>
 ## 4. Checkout Source:
 ```
 $ mkdir ~/omega2p && cd ~/omega2p
-$ git clone https://github.com/freebsd/freebsd.git
+$ git clone -b stable/13 https://github.com/freebsd/freebsd.git
 $ git clone https://github.com/freebsd/freebsd-wifi-build.git
 ```
 
 ## 5. Get Device Trees:
 ```
 $ cd ~/omega2p/src/sys/gnu/dts/mips
-$ fetch https://raw.githubusercontent.com/WereCatf/source/image/target/linux/\
-ramips/dts/OMEGA2.dtsi
-$ fetch https://raw.githubusercontent.com/WereCatf/source/image/target/linux/\
-ramips/dts/OMEGA2.dts
-$ fetch https://raw.githubusercontent.com/WereCatf/source/image/target/linux/\
-ramips/dts/OMEGA2P.dts
+$ fetch https://github.com/torvalds/linux/raw/master/arch/mips/boot/dts/ralink/omega2p.dts
+$ fetch https://github.com/torvalds/linux/raw/master/arch/mips/boot/dts/ralink/mt7628a.dtsi
 ```
 
 ## 6. Create a New Kernel Configuration File:
@@ -73,21 +71,21 @@ To enable booting from a USB key change root device name:
 options	ROOTDEVNAME=\"ufs:/dev/da0s2a\"
 ```
 
-Comment out debugging options in ~/omega2p/src/sys/mips/mediatek/std.mediatek
+Disable debugging options
 ```shell
-#options 	INVARIANTS
-#options 	INVARIANT_SUPPORT
-#options 	WITNESS
-#options 	WITNESS_SKIPSPIN
-#options 	DEBUG_REDZONE
-#options 	DEBUG_MEMGUARD
+nooptions	INVARIANTS
+nooptions	INVARIANT_SUPPORT
+nooptions	WITNESS
+nooptions	WITNESS_SKIPSPIN
+nooptions	DEBUG_REDZONE
+nooptions	DEBUG_MEMGUARD
 ```
 
-and uncomment some necessary options:
+and add some necessary options:
 ```
-options 	SOFTUPDATES	# Enable FFS soft updates support
-options 	UFS_DIRHASH	# Improve big directory performance
-options 	MSDOSFS		# Enable support for MSDOS filesystems
+options		SOFTUPDATES	# Enable FFS soft updates support
+options		UFS_DIRHASH	# Improve big directory performance
+options		MSDOSFS		# Enable support for MSDOS filesystems
 ```
 
 ## 7. Run the build:
